@@ -4,6 +4,7 @@ import 'package:guestbook/route/route.dart' as route;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -68,12 +69,23 @@ class _HomeState extends State<Home> {
             icon: const Icon(Icons.info),
             onPressed: null,
           ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
+          ),
         ],
       ),
       body: Column(
         children: [
           CarouselSlider(
-            options: CarouselOptions(height: 300.0),
+            options: CarouselOptions(
+                height: 300.0,
+                autoPlay: true,
+                autoPlayInterval: Duration(seconds: 3),
+                autoPlayAnimationDuration: Duration(milliseconds: 800),
+                autoPlayCurve: Curves.fastOutSlowIn),
             items: [
               Stack(children: [
                 Container(
@@ -146,11 +158,68 @@ class _HomeState extends State<Home> {
                       ))),
             ],
           ),
-          ElevatedButton(
-              child: Text("Submit"),
-              onPressed: () {
-                getGuestPosts();
-              }),
+          Container(
+            decoration: BoxDecoration(boxShadow: [
+              BoxShadow(color: Colors.black, offset: Offset(1.0, 1.0))
+            ]),
+            height: 80,
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(
+                Icons.history_edu,
+                size: 53,
+                color: Colors.white,
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Text('RDP Guestbook',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                  ))
+            ]),
+          ),
+          Center(
+              child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('guests') // 👈 Your desired collection name here
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                return const Text('Something went wrong');
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Text("Loading...");
+              }
+              return ListView(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data()! as Map<String, dynamic>;
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        leading: Text(data['guest_name'],
+                            style: TextStyle(
+                                fontWeight: FontWeight.w900, fontSize: 18)),
+                        title: Text(
+                          data['message'],
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              background: Paint()
+                                ..color = Color.fromARGB(255, 110, 201, 244)
+                                ..strokeWidth = 30
+                                ..style = PaintingStyle.stroke),
+                          textAlign: TextAlign.center,
+                        ),
+                      ), // 👈 Your valid data here
+                    );
+                  }).toList());
+            },
+          ))
         ],
       ),
       drawer: Drawer(
@@ -228,40 +297,50 @@ class _HomeState extends State<Home> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  scrollable: true,
+                  backgroundColor: Colors.lightBlue,
                   title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Icon(
                           Icons.edit,
                           size: 45,
+                          color: Colors.white,
                         ),
-                        Text('Leave a Message')
+                        SizedBox(
+                          width: 16,
+                        ),
+                        Text('Leave a Message',
+                            style: TextStyle(fontSize: 28, color: Colors.white))
                       ]),
                   content: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Form(
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            controller: myController1,
-                            decoration: InputDecoration(
-                              labelText: 'Name',
-                              icon: Icon(Icons.account_box),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: <Widget>[
+                            TextFormField(
+                              controller: myController1,
+                              decoration: InputDecoration(
+                                labelText: 'Name',
+                                icon: Icon(Icons.account_box),
+                              ),
                             ),
-                          ),
-                          TextFormField(
-                            maxLines: 8,
-                            controller: myController2,
-                            decoration: InputDecoration(
-                              labelText: 'Message',
-                              icon: Icon(Icons.message),
-                              border: OutlineInputBorder(
-                                  borderSide:
-                                      new BorderSide(color: Colors.teal)),
+                            SizedBox(
+                              height: 50,
                             ),
-                          ),
-                        ],
+                            TextFormField(
+                              maxLines: 8,
+                              controller: myController2,
+                              decoration: InputDecoration(
+                                labelText: 'Message',
+                                icon: Icon(Icons.message),
+                                border: OutlineInputBorder(
+                                    borderSide:
+                                        new BorderSide(color: Colors.teal)),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -270,6 +349,11 @@ class _HomeState extends State<Home> {
                         child: Text("Submit"),
                         onPressed: () {
                           addGuestPost();
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                            content: Text('Message sent to database!'),
+                          ));
                         })
                   ],
                 );
@@ -284,12 +368,12 @@ class _HomeState extends State<Home> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.pageview),
-            label: 'Page 1',
+            icon: Icon(Icons.pageview, color: Colors.blue),
+            label: 'About Us',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.pageview),
-            label: 'Page 2',
+            icon: Icon(Icons.pageview, color: Colors.blue),
+            label: 'Contact Us',
           ),
         ],
         onTap: (int index) {

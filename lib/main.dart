@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:guestbook/route/route.dart' as route;
+import 'package:guestbook/pages/auth_gate.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.yellow,
       ),
       onGenerateRoute: route.controller,
-      initialRoute: route.home,
+      initialRoute: route.authGate,
     );
   }
 }
