@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:guestbook/route/route.dart' as route;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -32,7 +34,11 @@ class _HomeState extends State<Home> {
   Future<void> addGuestPost() async {
     db
         .collection('guests')
-        .add({'guest_name': myController1.text, 'message': myController2.text})
+        .add({
+          'guest_name': myController1.text,
+          'message': myController2.text,
+          'created': DateTime.now(),
+        })
         .then((value) => print("Guest & message added"))
         .catchError((error) => print("Failed to add guest & message: $error"));
   }
@@ -51,6 +57,9 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    double sizeHeight = MediaQuery.of(context).size.height;
+    double sizeWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: const FlutterLogo(
@@ -67,7 +76,9 @@ class _HomeState extends State<Home> {
           ),
           IconButton(
             icon: const Icon(Icons.info),
-            onPressed: null,
+            onPressed: () {
+              showAlertDialog(context);
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -79,106 +90,119 @@ class _HomeState extends State<Home> {
       ),
       body: Column(
         children: [
-          CarouselSlider(
-            options: CarouselOptions(
-                height: 300.0,
+          if (sizeHeight > 800)
+            CarouselSlider(
+              options: CarouselOptions(
+                height: 280.0,
                 autoPlay: true,
                 autoPlayInterval: Duration(seconds: 3),
                 autoPlayAnimationDuration: Duration(milliseconds: 800),
-                autoPlayCurve: Curves.fastOutSlowIn),
-            items: [
-              Stack(children: [
+                autoPlayCurve: Curves.fastOutSlowIn,
+                enlargeCenterPage: true,
+                enlargeFactor: 0.3,
+              ),
+              items: [
+                Stack(children: [
+                  Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.5),
+                              spreadRadius: 15,
+                              blurRadius: 17,
+                              offset:
+                                  Offset(0, 7), // changes position of shadow
+                            ),
+                          ],
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/download.png'),
+                            fit: BoxFit.cover,
+                          ))),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        AnimatedTextKit(
+                          animatedTexts: [
+                            TypewriterAnimatedText(
+                              'When you get here, you understand.',
+                              textStyle: const TextStyle(
+                                fontSize: 20.0,
+                                color: Colors.yellow,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              speed: const Duration(milliseconds: 200),
+                            ),
+                          ],
+                          totalRepeatCount: 4,
+                          pause: const Duration(milliseconds: 1000),
+                          displayFullTextOnTap: true,
+                          stopPauseOnTap: false,
+                        ),
+                      ],
+                    ),
+                  ),
+                ]),
                 Container(
                     decoration: BoxDecoration(
-                        boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        spreadRadius: 15,
-                        blurRadius: 17,
-                        offset: Offset(0, 7), // changes position of shadow
-                      ),
-                    ],
+                        borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                        border: Border.all(color: Colors.white),
                         image: DecorationImage(
-                          image: AssetImage('assets/images/download.png'),
+                          image: AssetImage('assets/images/business.jpg'),
+                          fit: BoxFit.fitHeight,
+                        ))),
+                Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                        border: Border.all(color: Colors.white),
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/nursing.jpg'),
                           fit: BoxFit.cover,
                         ))),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      AnimatedTextKit(
-                        animatedTexts: [
-                          TypewriterAnimatedText(
-                            'When you get here, you understand.',
-                            textStyle: const TextStyle(
-                              fontSize: 20.0,
-                              color: Colors.yellow,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            speed: const Duration(milliseconds: 200),
-                          ),
-                        ],
-                        totalRepeatCount: 4,
-                        pause: const Duration(milliseconds: 1000),
-                        displayFullTextOnTap: true,
-                        stopPauseOnTap: false,
-                      ),
-                    ],
-                  ),
-                ),
+                Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                        border: Border.all(color: Colors.white),
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/software.jpg'),
+                          fit: BoxFit.cover,
+                        ))),
+                Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(18.0)),
+                        border: Border.all(color: Colors.white),
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/engineer.jpg'),
+                          fit: BoxFit.cover,
+                        ))),
+              ],
+            ),
+          if (sizeHeight > 800)
+            Container(
+              decoration: BoxDecoration(boxShadow: [
+                BoxShadow(
+                    color: Colors.blue, blurRadius: 2, offset: Offset(1.0, 1.0))
               ]),
-              Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/business.jpg'),
-                        fit: BoxFit.fitHeight,
-                      ))),
-              Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/nursing.jpg'),
-                        fit: BoxFit.cover,
-                      ))),
-              Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/software.jpg'),
-                        fit: BoxFit.cover,
-                      ))),
-              Container(
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/engineer.jpg'),
-                        fit: BoxFit.cover,
-                      ))),
-            ],
-          ),
-          Container(
-            decoration: BoxDecoration(boxShadow: [
-              BoxShadow(color: Colors.black, offset: Offset(1.0, 1.0))
-            ]),
-            height: 80,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(
-                Icons.history_edu,
-                size: 53,
-                color: Colors.white,
-              ),
-              SizedBox(
-                width: 20,
-              ),
-              Text('RDP Guestbook',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                  ))
-            ]),
-          ),
+              height: 70,
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(
+                  Icons.history_edu,
+                  size: 53,
+                  color: Colors.white,
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text('RDP Guestbook',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    ))
+              ]),
+            ),
           Center(
               child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
@@ -192,32 +216,47 @@ class _HomeState extends State<Home> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Text("Loading...");
               }
-              return ListView(
-                  scrollDirection: Axis.vertical,
-                  shrinkWrap: true,
-                  children:
-                      snapshot.data!.docs.map((DocumentSnapshot document) {
-                    Map<String, dynamic> data =
-                        document.data()! as Map<String, dynamic>;
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ListTile(
-                        leading: Text(data['guest_name'],
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900, fontSize: 18)),
-                        title: Text(
-                          data['message'],
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              background: Paint()
-                                ..color = Color.fromARGB(255, 110, 201, 244)
-                                ..strokeWidth = 30
-                                ..style = PaintingStyle.stroke),
-                          textAlign: TextAlign.center,
+              return SizedBox(
+                height: 350,
+                child: ListView(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    children:
+                        snapshot.data!.docs.map((DocumentSnapshot document) {
+                      Map<String, dynamic> data =
+                          document.data()! as Map<String, dynamic>;
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListTile(
+                          leading: Text(data['guest_name'],
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w900, fontSize: 18)),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                data['message'],
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  background: Paint()
+                                    ..color = Colors.blue.withOpacity(0.3)
+                                    ..strokeWidth = 30
+                                    ..style = PaintingStyle.stroke
+                                    ..strokeJoin = StrokeJoin.round
+                                    ..strokeCap = StrokeCap.round,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Icon(Icons.format_quote,
+                                  size: 34, color: Colors.blue),
+                            ],
+                          ),
+                          trailing: Text(
+                              RelativeTime(context).format(data['created'])),
                         ),
-                      ), // 👈 Your valid data here
-                    );
-                  }).toList());
+                      );
+                    }).toList()),
+              );
             },
           ))
         ],
@@ -319,9 +358,12 @@ class _HomeState extends State<Home> {
                         child: Column(
                           children: <Widget>[
                             TextFormField(
+                              inputFormatters: [
+                                new LengthLimitingTextInputFormatter(9)
+                              ],
                               controller: myController1,
                               decoration: InputDecoration(
-                                labelText: 'Name',
+                                labelText: ' First Name',
                                 icon: Icon(Icons.account_box),
                               ),
                             ),
@@ -329,6 +371,9 @@ class _HomeState extends State<Home> {
                               height: 50,
                             ),
                             TextFormField(
+                              inputFormatters: [
+                                new LengthLimitingTextInputFormatter(18)
+                              ],
                               maxLines: 8,
                               controller: myController2,
                               decoration: InputDecoration(
@@ -395,4 +440,29 @@ class _HomeState extends State<Home> {
     );
     ;
   }
+}
+
+showAlertDialog(BuildContext context) {
+  Widget okButton = TextButton(
+    child: Text('OK'),
+    onPressed: () {
+      Navigator.of(context).pop();
+    },
+  );
+
+  AlertDialog alert = AlertDialog(
+    title: Text('Info'),
+    content: Text(
+        "This app was developed in the Mobile Application course.  It connect to a Firebase back-end and used Firebase Auth for authentication."),
+    actions: [
+      okButton,
+    ],
+  );
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
 }
