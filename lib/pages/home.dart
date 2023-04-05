@@ -226,35 +226,33 @@ class _HomeState extends State<Home> {
                       Map<String, dynamic> data =
                           document.data()! as Map<String, dynamic>;
                       return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListTile(
-                          leading: Text(data['guest_name'],
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w900, fontSize: 18)),
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                data['message'],
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListTile(
+                            leading: Text(data['guest_name'],
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  background: Paint()
-                                    ..color = Colors.blue.withOpacity(0.3)
-                                    ..strokeWidth = 30
-                                    ..style = PaintingStyle.stroke
-                                    ..strokeJoin = StrokeJoin.round
-                                    ..strokeCap = StrokeCap.round,
+                                    fontWeight: FontWeight.w900, fontSize: 18)),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  data['message'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    background: Paint()
+                                      ..color = Colors.blue.withOpacity(0.3)
+                                      ..strokeWidth = 30
+                                      ..style = PaintingStyle.stroke
+                                      ..strokeJoin = StrokeJoin.round
+                                      ..strokeCap = StrokeCap.round,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
-                              Icon(Icons.format_quote,
-                                  size: 34, color: Colors.blue),
-                            ],
-                          ),
-                          trailing: Text(
-                              RelativeTime(context).format(data['created'])),
-                        ),
-                      );
+                                Icon(Icons.format_quote,
+                                    size: 34, color: Colors.blue),
+                              ],
+                            ),
+                            trailing: null,
+                          ));
                     }).toList()),
               );
             },
